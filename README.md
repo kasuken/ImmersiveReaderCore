@@ -1,10 +1,10 @@
 # Immersive Reader Core
 
-
+First experiment with the Azure Immersive Reader service and ASP.NET Core.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+You can follow the tutorial on my blog post: https://dev.to/expertsinside/getting-started-with-azure-immersive-reader-and-asp-net-core-2occ
 
 ### Prerequisites
 
