@@ -63,9 +63,6 @@
             const token = response.token;
             const subdomain = response.subdomain;
 
-            alert(token);
-            alert(subdomain);
-
             ImmersiveReader.launchAsync(token, subdomain, content, options)
                 .catch(function (error) {
                     alert("Error in launching the Immersive Reader. Check the console.");
