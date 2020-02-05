@@ -6,18 +6,23 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ImmersiveReaderCore.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace ImmersiveReaderCore.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly string SubscriptionKey;
-        private readonly string Endpoint;
+        private readonly string TenantId;     
+        private readonly string ClientId;     
+        private readonly string ClientSecret;
+        private readonly string Subdomain;
 
         public HomeController(IConfiguration configuration)
         {
-            SubscriptionKey = configuration["SubscriptionKey"];
-            Endpoint = configuration["Endpoint"];
+            TenantId = configuration["TenantId"];
+            ClientId = configuration["ClientId"];
+            ClientSecret = configuration["ClientSecret"];
+            Subdomain = configuration["Subdomain"];
         }
 
         public IActionResult Index()
@@ -26,18 +31,17 @@ namespace ImmersiveReaderCore.Controllers
         }
 
         [Route("token")]
-        public async Task<string> Token()
+        public async Task<JsonResult> Token()
         {
-            using (var client = new System.Net.Http.HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", SubscriptionKey);
-                using (var response = await client.PostAsync(Endpoint, null))
-                {
-                    var content = await response.Content.ReadAsStringAsync();
+            string authority = $"https://login.windows.net/{TenantId}";
+            const string resource = "https://cognitiveservices.azure.com/";
 
-                    return content;
-                }
-            }
+            var authContext = new AuthenticationContext(authority);
+            var clientCredential = new ClientCredential(ClientId, ClientSecret);
+
+            var authResult = await authContext.AcquireTokenAsync(resource, clientCredential);
+
+            return new JsonResult(new { token = authResult.AccessToken, subdomain = Subdomain });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

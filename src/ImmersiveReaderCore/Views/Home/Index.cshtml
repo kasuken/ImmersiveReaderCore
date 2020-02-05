@@ -2,7 +2,7 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class='immersive-reader-button' data-button-style='iconAndText' onclick='launchImmersiveReader()' value="Read">Read</div>
+<div class="immersive-reader-button" data-button-style="iconAndText" data-locale="en" onclick='launchImmersiveReader()'></div>
 
 <h1 id='title'>The Picture of Dorian Gray</h1>
 <div id='content'>
@@ -24,42 +24,57 @@
 </div>
 
 @section scripts {
-<script type='text/javascript' src='https://contentstorage.onenote.office.net/onenoteltir/immersivereadersdk/immersive-reader-sdk.0.0.1.js'></script>
-<script type='text/javascript'>
-    function getImmersiveReaderTokenAsync() {
-        return new Promise((resolve) => {
-            const url = '/token';
-            fetch(url)
-                .then((response) => {
-                    if (response.ok) {
-                        resolve(response.text());
-                    } else {
-                        throw new Error('Server response wasn\'t OK');
-                    }
-                })
-                .catch(function (error) {
-                    console.log(JSON.stringify(error));
-                });
+    <script src="https://contentstorage.onenote.office.net/onenoteltir/immersivereadersdk/immersive-reader-sdk.1.0.0.js"></script>
+    <script type='text/javascript'>
 
-        });
-    }
-
-    async function launchImmersiveReader() {
-
-        const content = {
-            title: document.getElementById('title').innerText,
-            chunks: [{
-                content: document.getElementById('content').innerText,
-                lang: 'en'
-            }]
-        };
-
-        const options = {
-            uiZIndex: 1000000
+        function getImmersiveReaderTokenAsync() {
+            return new Promise((resolve) => {
+                const url = '/token';
+                fetch(url)
+                    .then((response) => {
+                        if (response.ok) {
+                            resolve(response.json());
+                        } else {
+                            throw new Error('Server response wasn\'t OK');
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(JSON.stringify(error));
+                    });
+            });
         }
 
-        const token = await getImmersiveReaderTokenAsync();
-        ImmersiveReader.launchAsync(token, content, options);
-    }
-</script>
+        async function launchImmersiveReader() {
+
+            const content = {
+                title: document.getElementById('title').innerText,
+                chunks: [{
+                    content: document.getElementById('content').innerText,
+                    mimeType: "text/html"
+                }]
+            };
+
+            const options = {
+                uiZIndex: 2000,
+                "onExit": exitCallback,
+            }
+
+            const response = await getImmersiveReaderTokenAsync();
+            const token = response.token;
+            const subdomain = response.subdomain;
+
+            alert(token);
+            alert(subdomain);
+
+            ImmersiveReader.launchAsync(token, subdomain, content, options)
+                .catch(function (error) {
+                    alert("Error in launching the Immersive Reader. Check the console.");
+                    console.log(error);
+                });
+        }
+
+        function exitCallback() {
+            console.log("This is the callback function. It is executed when the Immersive Reader closes.");
+        }
+    </script>
 }
